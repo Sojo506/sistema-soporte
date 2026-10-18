@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>SistemaSoporte</title>
+</head>
+<body>
+    <h1>Clientes</h1>
+    <ul id="lista"></ul>
+    <script>
+        fetch('/api/clientes')
+            .then(r => r.json())
+            .then(clientes => {
+                const ul = document.getElementById('lista');
+                clientes.forEach(c => {
+                    const li = document.createElement('li');
+                    li.textContent = `${c.nombre} (${c.correo})`;
+                    ul.append(li);
+                });
+            });
+    </script>
+</body>
+</html>
