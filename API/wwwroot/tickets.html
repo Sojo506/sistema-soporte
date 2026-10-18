@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mesa de Ayuda | Sistema de Tickets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #111827;
+            --surface-card: #1f2937;
+            --border-color: #374151;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent-critica: #ef4444;
+            --accent-alta: #f97316;
+            --accent-media: #3b82f6;
+            --accent-baja: #10b981;
+            --badge-abierto: #60a5fa;
+            --badge-proceso: #fbbf24;
+            --badge-resuelto: #34d399;
+            --badge-cerrado: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Metrics summary cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .metric-card span {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .metric-card strong {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Filter bar */
+        .filter-panel {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1 1 180px;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .filter-group input,
+        .filter-group select {
+            background-color: var(--surface-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 0.5rem;
+            padding: 0.6rem 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            align-self: flex-end;
+        }
+
+        .btn-reset:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        /* Table */
+        .table-wrapper {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        thead {
+            background-color: rgba(31, 41, 55, 0.6);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            padding: 0.85rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(55, 65, 81, 0.4);
+            transition: background-color 0.15s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(31, 41, 55, 0.4);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            vertical-align: middle;
+        }
+
+        .ticket-code {
+            font-family: monospace;
+            font-weight: 600;
+            color: #93c5fd;
+            white-space: nowrap;
+        }
+
+        .ticket-title {
+            font-weight: 500;
+            color: var(--text-main);
+            max-width: 320px;
+        }
+
+        .ticket-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 320px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .badge-critica { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-alta { background: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.3); }
+        .badge-media { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-baja { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .badge-abierto { background: rgba(96, 165, 250, 0.15); color: #93c5fd; border: 1px solid rgba(96, 165, 250, 0.3); }
+        .badge-enproceso { background: rgba(251, 191, 36, 0.15); color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-resuelto { background: rgba(52, 211, 153, 0.15); color: #a7f3d0; border: 1px solid rgba(52, 211, 153, 0.3); }
+        .badge-cerrado { background: rgba(156, 163, 175, 0.15); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.3); }
+
+        .btn-reabrir {
+            background-color: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fde68a;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reabrir:hover {
+            background-color: #fbbf24;
+            color: #111827;
+        }
+
+        /* Pagination bar */
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .pagination-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-nav {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .btn-nav:hover:not(:disabled) {
+            background-color: var(--surface-card);
+            border-color: var(--primary-color);
+        }
+
+        .btn-nav:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Alert notifications */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            background-color: var(--surface-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            display: none;
+            z-index: 100;
+        }
+
+        .toast.success { border-color: #10b981; }
+        .toast.error { border-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <h1>Mesa de Ayuda - API de Tickets</h1>
+                <p>Gestión avanzada de soporte en capas con paginación y enrutamiento (Variante 0)</p>
+            </div>
+            <div>
+                <a href="/scalar/v1" target="_blank" class="btn-nav" style="text-decoration: none;">
+                    Ver Documentación Scalar &rarr;
+                </a>
+            </div>
+        </header>
+
+        <!-- Métricas Rápidas (/min/tickets/resumen) -->
+        <section class="metrics-grid" id="metrics-container">
+            <div class="metric-card">
+                <span>Total Tickets</span>
+                <strong id="metric-total">--</strong>
+            </div>
+            <div class="metric-card">
+                <span>Abiertos</span>
+                <strong id="metric-abierto" style="color: #60a5fa;">--</strong>
+            </div>
+            <div class="metric-card">
+                <span>En Proceso</span>
+                <strong id="metric-proceso" style="color: #fbbf24;">--</strong>
+            </div>
+            <div class="metric-card">
+                <span>Resueltos</span>
+                <strong id="metric-resuelto" style="color: #34d399;">--</strong>
+            </div>
+            <div class="metric-card">
+                <span>Cerrados</span>
+                <strong id="metric-cerrado" style="color: #9ca3af;">--</strong>
+            </div>
+        </section>
+
+        <!-- Filtros y Búsqueda -->
+        <section class="filter-panel">
+            <div class="filter-group">
+                <label for="filtro-q">Buscar (Título / Descripción)</label>
+                <input type="text" id="filtro-q" placeholder="Ej: contraseña, servidor..." />
+            </div>
+
+            <div class="filter-group">
+                <label for="filtro-estado">Estado</label>
+                <select id="filtro-estado">
+                    <option value="">Todos los Estados</option>
+                    <option value="Abierto">Abierto</option>
+                    <option value="EnProceso">En Proceso</option>
+                    <option value="Resuelto">Resuelto</option>
+                    <option value="Cerrado">Cerrado</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filtro-prioridad">Prioridad</label>
+                <select id="filtro-prioridad">
+                    <option value="">Todas las Prioridades</option>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Critica">Crítica</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filtro-orden">Ordenación</label>
+                <select id="filtro-orden">
+                    <option value="-fecha">Más recientes primero</option>
+                    <option value="fecha">Más antiguos primero</option>
+                    <option value="-prioridad">Mayor prioridad primero</option>
+                    <option value="prioridad">Menor prioridad primero</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-reset" id="btn-limpiar">Limpiar Filtros</button>
+        </section>
+
+        <!-- Tabla de Tickets -->
+        <main class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Asunto</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                        <th>Cliente</th>
+                        <th>Agente</th>
+                        <th>Fecha Creación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-tbody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            Cargando tickets desde el API...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <!-- Paginación -->
+        <footer class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">
+                Mostrando página 1 de 1 (0 tickets)
+            </div>
+            <div class="pagination-actions">
+                <button type="button" class="btn-nav" id="btn-prev" disabled>&larr; Página Anterior</button>
+                <button type="button" class="btn-nav" id="btn-next" disabled>Página Siguiente &rarr;</button>
+            </div>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Estado local de paginación y filtros
+        let paginaActual = 1;
+        const tamanoPagina = 10; // Tamaño estándar dentro del límite de 20 de Variante 0
+        let totalItems = 0;
+
+        const tbody = document.getElementById('tickets-tbody');
+        const paginationInfo = document.getElementById('pagination-info');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const filtroQ = document.getElementById('filtro-q');
+        const filtroEstado = document.getElementById('filtro-estado');
+        const filtroPrioridad = document.getElementById('filtro-prioridad');
+        const filtroOrden = document.getElementById('filtro-orden');
+        const btnLimpiar = document.getElementById('btn-limpiar');
+        const toast = document.getElementById('toast');
+
+        // Cargar tickets con filtros y paginación
+        async function cargarTickets() {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Cargando tickets...</td></tr>`;
+
+            const params = new URLSearchParams({
+                pagina: paginaActual,
+                tamano: tamanoPagina,
+                orden: filtroOrden.value
+            });
+
+            if (filtroEstado.value) params.append('estado', filtroEstado.value);
+            if (filtroPrioridad.value) params.append('prioridad', filtroPrioridad.value);
+            if (filtroQ.value.trim()) params.append('q', filtroQ.value.trim());
+
+            try {
+                const response = await fetch(`/api/tickets?${params.toString()}`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    mostrarToast(err.detail || 'Error al obtener tickets', 'error');
+                    return;
+                }
+
+                // Leer headers de paginación requeridos por la práctica
+                totalItems = parseInt(response.headers.get('X-Total-Count') || '0', 10);
+                const page = parseInt(response.headers.get('X-Page') || '1', 10);
+                const pageSize = parseInt(response.headers.get('X-Page-Size') || '10', 10);
+
+                const tickets = await response.json();
+                renderizarTabla(tickets);
+                actualizarPaginacion(page, pageSize, totalItems);
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: #ef4444;">Error de conexión con el servidor.</td></tr>`;
+            }
+        }
+
+        // Renderizar registros en la tabla
+        function renderizarTabla(tickets) {
+            if (!tickets || tickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No se encontraron tickets con los filtros aplicados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = tickets.map(t => {
+                const badgePrioridad = `badge-${t.prioridad.toLowerCase()}`;
+                const badgeEstado = `badge-${t.estado.toLowerCase()}`;
+                const fecha = new Date(t.fechaCreacion).toLocaleDateString('es-CR', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                // Acción de reabrir si está Resuelto (consume POST /min/tickets/{id}/reabrir)
+                const accion = t.estado === 'Resuelto' 
+                    ? `<button class="btn-reabrir" onclick="reabrirTicket(${t.id})">&#8635; Reabrir</button>`
+                    : `<span style="color: var(--text-muted); font-size: 0.75rem;">-</span>`;
+
+                return `
+                    <tr>
+                        <td class="ticket-code">${t.codigo}</td>
+                        <td>
+                            <div class="ticket-title">${escapeHtml(t.titulo)}</div>
+                            <div class="ticket-desc">${escapeHtml(t.descripcion)}</div>
+                        </td>
+                        <td><span class="badge ${badgePrioridad}">${t.prioridad}</span></td>
+                        <td><span class="badge ${badgeEstado}">${t.estado}</span></td>
+                        <td>#${t.clienteId}</td>
+                        <td>${t.agenteId ? '#' + t.agenteId : '<em style="color: #6b7280;">Sin asignar</em>'}</td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;">${fecha}</td>
+                        <td>${accion}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Cargar métricas consolidando /min/tickets/resumen
+        async function cargarResumen() {
+            try {
+                const res = await fetch('/min/tickets/resumen');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('metric-total').textContent = data.total;
+                    document.getElementById('metric-abierto').textContent = data.porEstado['Abierto'] || 0;
+                    document.getElementById('metric-proceso').textContent = data.porEstado['EnProceso'] || 0;
+                    document.getElementById('metric-resuelto').textContent = data.porEstado['Resuelto'] || 0;
+                    document.getElementById('metric-cerrado').textContent = data.porEstado['Cerrado'] || 0;
+                }
+            } catch (e) {
+                console.error("No se pudo cargar el resumen", e);
+            }
+        }
+
+        // Reabrir ticket usando endpoint Minimal API
+        async function reabrirTicket(id) {
+            try {
+                const res = await fetch(`/min/tickets/${id}/reabrir`, { method: 'POST' });
+                if (res.ok) {
+                    mostrarToast(`Ticket #${id} reabierto a EnProceso.`, 'success');
+                    await cargarTickets();
+                    await cargarResumen();
+                } else {
+                    const err = await res.json();
+                    mostrarToast(err.detail || 'No se pudo reabrir el ticket.', 'error');
+                }
+            } catch (e) {
+                mostrarToast('Error de red al reabrir.', 'error');
+            }
+        }
+
+        function actualizarPaginacion(page, pageSize, total) {
+            const totalPaginas = Math.ceil(total / pageSize) || 1;
+            paginationInfo.textContent = `Mostrando página ${page} de ${totalPaginas} (${total} tickets en total)`;
+            btnPrev.disabled = page <= 1;
+            btnNext.disabled = page >= totalPaginas;
+        }
+
+        function mostrarToast(mensaje, tipo) {
+            toast.textContent = mensaje;
+            toast.className = `toast ${tipo}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event Listeners
+        btnPrev.addEventListener('click', () => {
+            if (paginaActual > 1) {
+                paginaActual--;
+                cargarTickets();
+            }
+        });
+
+        btnNext.addEventListener('click', () => {
+            paginaActual++;
+            cargarTickets();
+        });
+
+        let debounceTimer;
+        filtroQ.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                paginaActual = 1;
+                cargarTickets();
+            }, 300);
+        });
+
+        filtroEstado.addEventListener('change', () => {
+            paginaActual = 1;
+            cargarTickets();
+        });
+
+        filtroPrioridad.addEventListener('change', () => {
+            paginaActual = 1;
+            cargarTickets();
+        });
+
+        filtroOrden.addEventListener('change', () => {
+            paginaActual = 1;
+            cargarTickets();
+        });
+
+        btnLimpiar.addEventListener('click', () => {
+            filtroQ.value = '';
+            filtroEstado.value = '';
+            filtroPrioridad.value = '';
+            filtroOrden.value = '-fecha';
+            paginaActual = 1;
+            cargarTickets();
+        });
+
+        // Inicializar
+        cargarTickets();
+        cargarResumen();
+    </script>
+</body>
+</html>

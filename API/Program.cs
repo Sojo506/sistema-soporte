@@ -71,6 +71,46 @@ app.MapPost("/min/clientes", (Cliente cliente, IClienteFlujo flujo) =>
     return Results.Created($"/min/clientes/{creado.Id}",creado);
 });
 
+// Endpoints Minimal API para Tickets
+app.MapGet("/min/tickets/resumen", async (ITicketFlujo flujo) =>
+{
+    var resultado = await flujo.ObtenerResumen();
+    return Results.Ok(resultado.Valor);
+})
+.WithName("ObtenerResumenTickets")
+.WithSummary("Obtiene el resumen estadístico de tickets por estado y prioridad")
+.Produces<TicketResumenDto>(StatusCodes.Status200OK);
+
+app.MapPost("/min/tickets/{id:int}/reabrir", async (int id, ITicketFlujo flujo) =>
+{
+    var resultado = await flujo.Reabrir(id);
+    if (!resultado.Exito || resultado.Valor is null)
+    {
+        return resultado.TipoError switch
+        {
+            TipoErrorOperacion.NoEncontrado => Results.Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                title: "Recurso no encontrado",
+                detail: resultado.Mensaje),
+            TipoErrorOperacion.ReglaNegocio => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Conflicto con regla de negocio",
+                detail: resultado.Mensaje),
+            _ => Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Solicitud inválida",
+                detail: resultado.Mensaje)
+        };
+    }
+
+    return Results.Ok(resultado.Valor);
+})
+.WithName("ReabrirTicket")
+.WithSummary("Reabre un ticket en estado Resuelto pasándolo a EnProceso e incrementando reaperturas")
+.Produces<Ticket>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status404NotFound)
+.ProducesProblem(StatusCodes.Status409Conflict);
+
 
 //nos permite que "/" sirva wwwroot/index,html sin escribir el nombre del archivo
 app.UseDefaultFiles();
