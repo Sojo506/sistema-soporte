@@ -1,4 +1,4 @@
-﻿namespace Abtracciones.Modelos
+namespace Abtracciones.Modelos
 {
     public enum PrioridadTicket { Baja, Media, Alta, Critica }
     public enum EstadoTicket { Abierto, EnProceso, Resuelto, Cerrado }
@@ -7,7 +7,7 @@
     {
         public int Id { get; set; }
         public string Codigo { get; set; } = string.Empty;
-        public string Titulo { get; set; }
+        public string Titulo { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public PrioridadTicket Prioridad { get; set; }
         public EstadoTicket Estado { get; set; }
