@@ -6,18 +6,40 @@ using Abtracciones.Modelos;
 using DA.Contexto;
 using Microsoft.EntityFrameworkCore;
 
+using System.Text.Json.Serialization;
+using API.Constraints;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
-builder.Services.AddControllers();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+// Soporte estándar RFC 9457 para ProblemDetails
+builder.Services.AddProblemDetails();
+
+// Registro de la restricción de ruta personalizada para Variante 0
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.ConstraintMap.Add("codigoTicket", typeof(CodigoTicketConstraint));
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-
-//Inyeccion de dependencias
+// Inyección de dependencias
 builder.Services.AddScoped<IClienteDA, ClienteDA>();
 builder.Services.AddScoped<IClienteFlujo, ClienteFlujo>();
+builder.Services.AddScoped<ITicketDA, TicketDA>();
+builder.Services.AddScoped<ITicketFlujo, TicketFlujo>();
 
 var cadenaConexion = builder.Configuration.GetConnectionString("SistemaSoporte") ??
     throw new InvalidOperationException("Falta la cadena de conexion 'Sistema Soporte' en la configuraion");
@@ -25,6 +47,8 @@ var cadenaConexion = builder.Configuration.GetConnectionString("SistemaSoporte")
 builder.Services.AddDbContext<SistemaSoporteContexto>(opciones => opciones.UseSqlServer(cadenaConexion));
 
 var app = builder.Build();
+
+app.UseStatusCodePages();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
